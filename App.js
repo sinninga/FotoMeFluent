@@ -31,8 +31,28 @@ export default function App() {
 
   const handleImagePick = async () => {
     const image = await ImagePicker.launchImageLibraryAsync();
+
     if (!image.canceled) {
-      // Handle the selected image
+      // Send the captured image to the backend server for object detection
+      const base64Image = image.assets[0].base64;
+      try {
+        const response = await fetch('http://localhost:3000/detect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ base64Image }),
+        });
+
+        if (response.ok) {
+          const { objects } = await response.json();
+          console.log('Detected objects:', objects);
+        } else {
+          console.error('Error detecting objects:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error sending image to server:', error);
+      }
     }
   };
 
